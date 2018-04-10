@@ -1,8 +1,8 @@
 ## ncOrtho  
-NcOrtho is a software to predict orthologous micro-RNAs within a 
-species of interest for a seed micro-RNA precursor sequence. Based on
-the seed sequence and a user defined set of species a core orthologous 
-set of micro-RNA precursor sequences is constructed based on gene order. 
+NcOrtho is a software to predict orthologous microRNAs within a 
+species of interest for a reference microRNA precursor sequence. Based on
+the reference sequence and a user defined set of species a core orthologous 
+set of microRNA precursor sequences is constructed based on gene order. 
 This set is used to construct a covariance model which is in turn used
 to search your species of interest.
 For workflow details see the user manual (UserManual_ncOrtho.pdf).
@@ -10,14 +10,14 @@ For workflow details see the user manual (UserManual_ncOrtho.pdf).
 ## Installation
 The tool comes in two Perl scripts: the ncOrtho1.0.0_pre.pl script to 
 precompute/hash your input data and the ncOrtho1.0.0_main.pl script, which
-implements the prediction algorithm. Both scripts rely on secondaray programs
+implements the prediction algorithm. Both scripts rely on secondary programs
 which must be present on your system. Also you have to specify the respective
 path in the head of both scripts. 
 
 List of programs needed:
 - Infernal-package (cmbuild, cmcalibrate, cmsearch)
-- blastall and formatdb
-- tcoffee
+- blastn and makeblastdb
+- t-coffee
 
 ## Usage
 Prerequisite for the ncOrtho-1.0.0_pre.pl script is that all required input data
