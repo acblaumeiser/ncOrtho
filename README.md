@@ -15,7 +15,7 @@ which must be present on your system. Also you have to specify the respective
 path in the head of both scripts. 
 
 List of programs needed:
-- Infernal-package (cmbuild, calibrate, cmsearch)
+- Infernal-package (cmbuild, cmcalibrate, cmsearch)
 - blastall and formatdb
 - tcoffee
 
@@ -46,6 +46,3 @@ first release in version 1.0.0
 Dept. for Applied Bioinformatics
 Institute for Cell Biology and Neurosciences
 Goethe University Frankfurt am Main
-
-
-
