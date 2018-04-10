@@ -1,20 +1,22 @@
 #! /usr/bin/perl
 # Author : Daniel Amsel - daniel.amsel@gmx.de
+# Modified by Andreas Blaumeiser - ablaumeiser@stud.uni-frankfurt.de
+# Last modified 04/10/18
+
 use strict;
 use warnings;
 use Getopt::Long;
 use Storable;
 
 ##################################################################################
-############################# PATHVARIABLES TO EDIT###############################
+############################# PATHVARIABLES TO EDIT ##############################
 ##################################################################################
 
-my $formatdb = 'formatdb';		# path or command to formatdb	
+my $blastdb = 'makeblastdb';		# path or command to makeblastdb	
 
 ##################################################################################
-######################## DO NOT TOUCH THE CODE BELOW THIS LINE####################
+######################## DO NOT TOUCH THE CODE BELOW THIS LINE ###################
 ##################################################################################
-
 
 #######################
 ##### VARIABLES #######
@@ -61,14 +63,12 @@ GetOptions      (       'root_genome=s'         =>      \$root_genome           
 			'h|help'		=>	\$help			);
 ##################################################################################
 
-
 ###########################
 if ($help) {
         print $helpmessage;
         exit;
 }
 ###########################
-
 
 #######################################################################
 my $root_gtf_hash_file          = $root_gtf.".hash";
@@ -85,7 +85,7 @@ my %oma_ortho_hash;
 #####################################################
 ############### make BLAST DBs ######################
 #####################################################
-system("$formatdb -p F -i $root_genome");
+system("$blastdb -dbtype nucl -in $root_genome")
 print "finished root genome blast db\n";				
 #####################################################
 ############## SAVE ROOT GTF TO HASH ################
@@ -246,7 +246,3 @@ sub gtf_parser{
         }
 	return \%tmp_ensg_hash;
 }
-
-
-
-
