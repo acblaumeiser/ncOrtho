@@ -3,21 +3,23 @@
 ## Modified - Ingo Ebersberger
 ## Modified by Andreas Blaumeiser
 ## Last modified: 04/10/2018
+
 use strict;
 use warnings;
 use Getopt::Long;
 use Storable;
-use Bio::DB::Fasta;
+#use Bio::DB::Fasta;
 
 ##################################################################################
 ############################# PATHVARIABLES TO EDIT ##############################
 ##################################################################################
-# Infernal
-my $cmbuild     = '/home/andreas/Applications/infernal-1.1.2-linux-intel-gcc/binaries/cmbuild';  		# path or command to cmbuild
-my $cmsearch    = '/home/andreas/Applications/infernal-1.1.2-linux-intel-gcc/binaries/cmsearch';		# path or command to cmsearch
-my $cmcalibrate = '/home/andreas/Applications/infernal-1.1.2-linux-intel-gcc/binaries/cmcalibrate';		# path or command to cmcalibrate
 
-# BLAST
+# Infernal
+my $cmbuild     = '/home/andreas/Applications/infernal-1.1.2-linux-intel-gcc/binaries/cmbuild';			# path or command to cmbuild
+my $cmcalibrate = '/home/andreas/Applications/infernal-1.1.2-linux-intel-gcc/binaries/cmcalibrate';		# path or command to cmcalibrate
+my $cmsearch    = '/home/andreas/Applications/infernal-1.1.2-linux-intel-gcc/binaries/cmsearch';		# path or command to cmsearch
+
+# BLAST+
 my $blastn      = 'blastn';		# path or command to blastn
 my $formatdb	= 'makeblastdb';	# path or command to makeblastdb
 
@@ -28,10 +30,8 @@ my $tcoffee     = 't_coffee';		# path or command to t_coffee
 ######################## DO NOT TOUCH THE CODE BELOW THIS LINE ###################
 ##################################################################################
 
-
-
 ###############################
-######## INPUT VARIABLES ######
+####### INPUT VARIABLES #######
 ###############################
 my $root_genome;             ##
 my $root_gtf_hash_file;      ##
@@ -60,11 +60,9 @@ if (@ARGV==0) {              ##
         $help = 1;           ##
 }                            ##
 ###############################
-my $outfile = 0;	     ##
-my $cpu = 1;	             ##
+my $outfile = 1;	     ##
+my $cpu = 8;	             ##
 ###############################
-
-
 
 my $helpmessage = 	"
 ===============================================================================
@@ -93,7 +91,7 @@ my $helpmessage = 	"
 |	-rna_start <>			=	start position of ncRNA	      |
 |	-rna_stop <>			=	stop  position of ncRNA       |
 |	-rna_chr <>			=	chromosome     of ncRNA       |
-|									      |	
+|	-cpu <>				=	nr of cores		      |	
 |	-mip <>				=	max. inserted proteins        |
 |		maximum number of allowed proteins between up- and down-      |
 |		stream protein sequences - e.g. <0> or <2> or ...             |
@@ -103,7 +101,7 @@ my $helpmessage = 	"
 | 									      |
 |	-h|help				=	prints this help              |
 |									      |
-| !!!!!	Please note to provide the full paths to the algorithm !!!!!	      |
+|     !!!!! Please note to provide the full paths to the algorithm !!!!!      |
 |=============================================================================|
 ===============================================================================\n";
 
@@ -142,18 +140,18 @@ if ($help) {
         print $helpmessage;
         exit;
 }
+
 ###############################
 ## checking for interest genome
 if (!-e "$ukn_genome"){
-	print "Error while checking for the interest genome.\nCould not find: $ukn_genome\nExiting...\n";
-	exit;
+	die "Error while checking for query genome.\nCould not find: $ukn_genome\nExiting...\n";
 }
 
 ###########################
 ## checking for outdir
 if (!-e "$outpath"){
-	print "$outpath is not existing... I will try to generate it\n";
-	!`mkdir -p $outpath` or die "could not generate outdir $outpath\n"; 
+	print "$outpath does not exist... Trying to generate it.\n";
+	!`mkdir -p $outpath` or die "Could not generate outdir $outpath.\n"; 
 }
 
 chdir $outpath; # change to specified output folder
@@ -199,8 +197,6 @@ while(<NCRNA>){
 }
 close(NCRNA);
 my $ncRNA_seq_len = length($ncRNA_seq);
-
-
 
 #################################################################################################
 ################# BLASTN search for ncRNA if no start, stop, chr defined by user ################
@@ -639,7 +635,7 @@ if ($createCM) { ### a covariance model does not yet exist for the miRNA
 				delete $count_hash{$species};
 				delete $US_hash{$species};
 				delete $DS_hash{$species};
-	            delete $core_genome_hash{$species};
+				delete $core_genome_hash{$species};
 				next;
 			}
 			elsif (not defined $ds_chr){
@@ -647,7 +643,7 @@ if ($createCM) { ### a covariance model does not yet exist for the miRNA
 				delete $count_hash{$species};
 				delete $US_hash{$species};
 				delete $DS_hash{$species};
-	            delete $core_genome_hash{$species};
+				delete $core_genome_hash{$species};
 				next;
 			}
 			else { 
@@ -673,7 +669,7 @@ if ($createCM) { ### a covariance model does not yet exist for the miRNA
 				delete $count_hash{$species};
 				delete $US_hash{$species};
 				delete $DS_hash{$species};
-	            delete $core_genome_hash{$species};
+				delete $core_genome_hash{$species};
 			}
 		}
 		# count the species that left after deleting the ones over the threshold
@@ -759,12 +755,14 @@ if ($createCM) { ### a covariance model does not yet exist for the miRNA
 	print "STEP 04\n";
 	system("$cmcalibrate --cpu $cpu $covariance_model");
 }
-else {
-	print "A covariance model already exists. Skipping STEPs 01 - 04\n"; 
-}
-print "STEP 05\n";
-system("$cmsearch --cpu $cpu --noali --tblout $cmsearch_out $covariance_model $ukn_genome");
 
+else {
+	print "Skipping STEPs 01 - 04\n"; 
+}
+
+print "STEP 05\n";
+
+system("$cmsearch --cpu $cpu --noali --tblout $cmsearch_out $covariance_model $ukn_genome");
 
 ################ parse CMSEARCH output #################
 my $cm_chr;
@@ -777,13 +775,12 @@ my %cm_hash;
 my $cm_index = 1; # key for cmsearch output hit 
 
 # hard cut off for cm_search.out file 						## not in use ##
-# my $cmsearch_out_small = $outpath."/cmsearch_small.out";
-# system("head -n 32 $cmsearch_out > $cmsearch_out_small");
-# open(CMOUT,"<",$cmsearch_out_small);
+my $cmsearch_out_small = $outpath."/cmsearch_small.out";
+system("head -n 52 $cmsearch_out > $cmsearch_out_small");
+open(CMOUT,"<",$cmsearch_out_small);
 
-
-open(CMOUT,"<",$cmsearch_out);
-while(<CMOUT>){ 
+#open(CMOUT,"<",$cmsearch_out);
+while(<CMOUT>){
         next if (/^#/);
         my @split_line = split;
         $cm_relevant = $split_line[16];
@@ -799,7 +796,7 @@ while(<CMOUT>){
                 else{
                         $cm_strand = 1;
                 }
-                if($cm_tmp_start < $cm_tmp_stop){
+                if ($cm_tmp_start < $cm_tmp_stop){
                         $cm_start = $cm_tmp_start;
                         $cm_stop  = $cm_tmp_stop;
                 }
@@ -839,13 +836,9 @@ while(<CMOUT>){
 }
 close(CMOUT);
 
-
-
-
-
-
-
 my %result_hash;	# {index} = @(candidate_name, start, stop, chr, strand, score, RBBH_result);
+
+	############# RECIPROCAL BLAST SEARCH #############
 
 foreach(keys %cm_hash){
 	my $cm_index  = $_;
