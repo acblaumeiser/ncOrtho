@@ -932,7 +932,7 @@ sub genome_parser{
 	open(GENOME,"<",$file);
         while(<GENOME>){
                 if ($_=~/^>/){
-                        if ($_=~/^>$chr/){
+                        if ($_=~/^>$chr\b/){
                                 $take_seq = 1;
                         }
                         else{
