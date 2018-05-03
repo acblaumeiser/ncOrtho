@@ -2,7 +2,7 @@
 ## Author : Daniel Amsel - daniel.amsel@gmx.de
 ## Modified - Ingo Ebersberger
 ## Modified by Andreas Blaumeiser
-## Last modified: 04/10/2018
+## Last modified: 05/02/2018
 
 use strict;
 use warnings;
@@ -51,6 +51,7 @@ my $ukn_genome;              ##
 my $outpath;                 ##
 ###############################
 my $createCM = 1;            ##
+my $cm_only = 0;             ##
 ###############################
 my $max_intra_prot = 0;	     ##
 my $min_seq_len = 0.9;	     ##
@@ -61,7 +62,7 @@ if (@ARGV==0) {              ##
 }                            ##
 ###############################
 my $outfile = 1;	     ##
-my $cpu = 8;	             ##
+my $cpu = 4;	             ##
 ###############################
 
 my $helpmessage = 	"
@@ -169,9 +170,8 @@ my $cmsearch_out = $outpath."/cmsearch.out";
 if (-e "$outpath/rna.cm" and -e "$outpath/seq.aln" and -e "$outpath/rna_aln.sto"){ 
 	print "A covariance model already exists in $outpath.\nSkipping the covariance model generation.\n";
 	$createCM = 0;
-
 }
-###########################
+###################################################################
 ###################################################################
 my %root_gtf_hash               = %{retrieve($root_gtf_hash_file)};
 my %core_gtf_hash               = %{retrieve($core_gtf_hash_file)};
@@ -224,9 +224,9 @@ else{
 	my @tmp_rna_name = split('/',$ncRNA);
 	$rna_name = $tmp_rna_name[-1];
 }
-print ">$rna_name :\n";
-print "Found RNA at $rna_start, $rna_stop, $rna_chr\n";
-print STDERR ">$rna_name :\n";
+print ">$rna_name:\n";
+print "Found ncRNA at $rna_start, $rna_stop, $rna_chr\n";
+#print STDERR ">$rna_name :\n";
 
 if ($createCM) { ### a covariance model does not yet exist for the miRNA
 
@@ -759,10 +759,13 @@ if ($createCM) { ### a covariance model does not yet exist for the miRNA
 else {
 	print "Skipping STEPs 01 - 04\n"; 
 }
-
+if ($cm_only == 1){
+	print "Covariance model calculation finished.\n";
+	exit;
+}
 print "STEP 05\n";
 
-system("$cmsearch --cpu $cpu --noali --tblout $cmsearch_out $covariance_model $ukn_genome");
+system("$cmsearch -E 0.01 --cpu $cpu --noali --tblout $cmsearch_out $covariance_model $ukn_genome");
 
 ################ parse CMSEARCH output #################
 my $cm_chr;
@@ -897,7 +900,7 @@ foreach (keys %result_hash){
 	my $key = $_;
 	my @tmp_array = @{$result_hash{$key}};
 	if($tmp_array[0] eq 'SUCCESS'){
-		print "#### Potential (CO-)Ortholog found: @tmp_array\n";
+		print "#### Potential (Co-)Ortholog found: @tmp_array\n";
 		$no_hit_found = 1;
 		#### mirko edit #####
 		# generate an additional outfile if specified by user
