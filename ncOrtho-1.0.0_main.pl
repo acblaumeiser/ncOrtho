@@ -1,8 +1,7 @@
 #! /usr/bin/perl
 ## Author : Daniel Amsel - daniel.amsel@gmx.de
-## Modified - Ingo Ebersberger
 ## Modified by Andreas Blaumeiser
-## Last modified: 05/02/2018
+## Last modified: 2018-11-01
 
 use strict;
 use warnings;
@@ -167,7 +166,7 @@ my $cmsearch_out = $outpath."/cmsearch.out";
 ###########################
 ################################################
 ## checking whether a covariance model already exists for this miRNA
-if (-e "$outpath/rna.cm" and -e "$outpath/seq.aln" and -e "$outpath/rna_aln.sto"){ 
+if (-e "$outpath/rna.cm"){ 
 	print "A covariance model already exists in $outpath.\nSkipping the covariance model generation.\n";
 	$createCM = 0;
 }
